@@ -182,7 +182,7 @@ return [
         // Override the Translation System
         App\Providers\NioTranslationServiceProvider::class,
         // Other Service Providers
-        App\Providers\BigchainDBServiceProvider::class,
+        App\BigChainDB\BigChainServiceProvider::class,
     ],
 
     /*

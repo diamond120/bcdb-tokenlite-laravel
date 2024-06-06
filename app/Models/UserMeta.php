@@ -10,10 +10,10 @@
  */
 namespace App\Models;
 
+use App\BigChainDB\BigChainModel;
 use Auth;
-use Illuminate\Database\Eloquent\Model;
 
-class UserMeta extends Model
+class UserMeta extends BigChainModel
 {
 
     /*
