@@ -7,16 +7,13 @@ namespace App\BigChainDB;
 
 class BigChainModel
 {
-    /*
-     * Table Name Specified
-     */
-    protected $table;
+    protected static $table;
 
-    public static function where($operand)
+    public static function __callStatic($method, $parameters)
     {
-        return BigChainQuery::create([
-            "operator" => "is",
-            "operand" => $operand
-        ]);
+        $query = new BigChainQuery(static::$table);
+        if(method_exists($query, $method))
+            return call_user_func_array([$query, $method], $parameters);
+        return (new static)->$method(...$parameters);
     }
 }

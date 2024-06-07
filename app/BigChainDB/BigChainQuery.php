@@ -7,11 +7,23 @@ namespace App\BigChainDB;
 
 class BigChainQuery
 {
-    private $queries = [];
+    protected $table = "";
 
-    public static function create($query) {
-        $obj = new self();
-        $obj->queries->push($query);
+    public function __construct(String $table)
+    {
+        $this->table = $table;
+    }
+
+    public function where($key, $value)
+    {
+        return $this;
+    }
+
+    public function first()
+    {
+        $obj = new \stdClass();
+        $obj->object = $this->table;
+        $obj->save_activity = 'TRUE';
         return $obj;
     }
 }

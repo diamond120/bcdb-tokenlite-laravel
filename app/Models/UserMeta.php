@@ -19,7 +19,7 @@ class UserMeta extends BigChainModel
     /*
      * Table Name Specified
      */
-    protected $table = 'user_metas';
+    protected static $table = 'user_metas';
 
     /**
      * The attributes that are mass assignable.
