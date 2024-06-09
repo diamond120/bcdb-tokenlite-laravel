@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\BigChainDB\BigChainModel;
 
-class Referral extends Model
+class Referral extends BigChainModel
 {
     /*
      * Table Name Specified
      */
-    protected $table = 'referrals';
+    protected static $table = 'referrals';
 
     /**
      * The attributes that are mass assignable.

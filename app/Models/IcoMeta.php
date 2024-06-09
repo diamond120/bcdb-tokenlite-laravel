@@ -11,14 +11,14 @@
 namespace App\Models;
 
 use IcoData;
-use Illuminate\Database\Eloquent\Model;
+use App\BigChainDB\BigChainModel;
 
-class IcoMeta extends Model
+class IcoMeta extends BigChainModel
 {
     /*
      * Table Name Specified
      */
-    protected $table = 'ico_metas';
+    protected static $table = 'ico_metas';
 
     /**
      * The attributes that are mass assignable.

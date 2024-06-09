@@ -10,14 +10,14 @@
  */
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\BigChainDB\BigChainModel;
 
-class Activity extends Model
+class Activity extends BigChainModel
 {
     /*
      * Table Name Specified
      */
-    protected $table = 'activities';
+    protected static $table = 'activities';
 
     /**
      * The attributes that are mass assignable.

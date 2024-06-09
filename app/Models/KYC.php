@@ -2,8 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Model;
+use App\BigChainDB\BigChainModel;
 
 /**
  * KYC Model
@@ -16,12 +15,12 @@ use Illuminate\Database\Eloquent\Model;
  * @method static orderBy(string $string, string $string1)
  * @method static FindOrFail($id)
  */
-class KYC extends Model
+class KYC extends BigChainModel
 {
     /*
      * Table Name
      */
-    protected $table = 'kycs';
+    protected static $table = 'kycs';
     /*
      * Status Data
      */

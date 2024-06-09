@@ -12,14 +12,14 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use App\Models\IcoMeta;
-use Illuminate\Database\Eloquent\Model;
+use App\BigChainDB\BigChainModel;
 
-class IcoStage extends Model
+class IcoStage extends BigChainModel
 {
     /*
      * Table Name Specified
      */
-    protected $table = 'ico_stages';
+    protected static $table = 'ico_stages';
     /**
      * The attributes that are mass assignable.
      *
@@ -153,7 +153,7 @@ class IcoStage extends Model
     public static function dashboard()
     {
         $tnxs = self::check_stage(active_stage()->id);
-
+        
         $data['stage'] = active_stage();
 
         $data['trnxs'] = (object) [

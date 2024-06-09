@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\BigChainDB\BigChainModel;
 
-class Translate extends Model
+class Translate extends BigChainModel
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'translates';
+    protected static $table = 'translates';
 
     /**
      * The attributes that are mass assignable.

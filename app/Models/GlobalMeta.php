@@ -8,19 +8,19 @@
  */
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\BigChainDB\BigChainModel;
 
 /**
  * GlobalMeta Model
  *
  * @since 1.0 @version 1.0
  */
-class GlobalMeta extends Model
+class GlobalMeta extends BigChainModel
 {
     /*
      * Table Name Specified
      */
-    protected $table = 'global_metas';
+    protected static $table = 'global_metas';
 
     /**
      * The attributes that are mass assignable.
