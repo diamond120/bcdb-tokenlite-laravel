@@ -5,6 +5,7 @@
  */
 namespace App\BigChainDB;
 
+use DateTime;
 use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
@@ -38,16 +39,10 @@ class BigChainQuery
             'limit' => $this->limit
         ];
     }
-    
-    public function all()
-    {
-        $res = self::$driver->get('/', [ 'query' => [ 'object' => $this->table ]]);
-        $items = json_decode($res->getBody()->getContents())->data;
-        return array_map(function($item) { return new $this->object($item); }, $items);
-    }
 
     public function get()
-    {        
+    {    
+        Log::info('GET ' . $this->table . ' ' . json_encode($this->queries));    
         if($this->table == 'ico_stages' || $this->table == 'transactions') {
             $this->queries = [];
         }
@@ -58,17 +53,29 @@ class BigChainQuery
         $res = self::$driver->get('/', [ 'query' => $this->getParams() ]);
         
         $items = json_decode($res->getBody()->getContents())->data;
+        
         if(!is_array($items)) {
             throw new \Exception(json_encode($items));
         }
+
+        Log::info('PARSE ' . json_encode($items));
         return new Collection(array_map(function($item) { return new $this->object($item); }, $items));
+    }
+    
+    public function all()
+    {
+        return $this->get();
     }
 
     public function first()
     {
-        $this->limit(1);
-        $res = $this->get();
-        return empty($res) ? null : $res[0];
+        return $this->limit(1)->get()->first();
+    }
+
+    public function value(string $column) 
+    {
+        $res = $this->first();
+        return $res ? $res->{$column} : null;
     }
 
     public function count()
@@ -92,7 +99,7 @@ class BigChainQuery
             'object' => $this->table
         ]]);
         $sss = $this->where($data)->first();
-        Log::info("Created " . json_encode($sss));
+        Log::info("CREATE " . json_encode($sss));
         return $sss;
         //Log::info("Create" . json_encode(json_decode($res->getBody()->getContents())));
     }
@@ -214,6 +221,15 @@ class BigChainQuery
     public function whereBetween($column, $value) {
         return $this->where($column, 'between', $value);
     }
+
+    public function whereDate($column, $value) {
+
+        return $this->whereBetween($column, [
+            (new DateTime($value . ' 00:00:00'))->getTimestamp(),
+            (new DateTime($value . ' 23:59:59'))->getTimestamp(),
+        ]);
+    }
+
     public function orWhere($column, $operator = null, $value = null)
     {
         return $this->addQuery('or', $column, $operator, $value);

@@ -11,25 +11,40 @@
  */
 namespace App\Models;
 
+use App\BigChainDB\BigChainModel;
 use Carbon\Carbon;
 use App\Models\KYC;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use App\Notifications\ResetPassword;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Auth\MustVerifyEmail;
+use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 
 /**
  * @property mixed walletAddress
  */
-class User extends Authenticatable // implements MustVerifyEmail
+class User extends BigChainModel implements
+    AuthenticatableContract,
+    AuthorizableContract,
+    CanResetPasswordContract
 {
-    use Notifiable;
+    use Notifiable, Authenticatable, Authorizable, CanResetPassword, MustVerifyEmail;
 
     /*
      * Table Name Specified
      */
-    protected $table = 'users';
+    protected static $table = 'users';
+
+    public function getKeyName()
+    {
+        return 'id';
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -288,20 +303,19 @@ class User extends Authenticatable // implements MustVerifyEmail
      */
     public static function dashboard($get = 15)
     {
-        $kyc = new KYC;
         Carbon::setWeekStartsAt(Carbon::MONDAY);
         Carbon::setWeekEndsAt(Carbon::SUNDAY);
 
         $data['all'] = self::count();
         $data['last_week'] = self::whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
-        $data['kyc_last_week'] = $kyc->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
+        $data['kyc_last_week'] = KYC::whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->count();
 
         $data['unverified'] = ceil(((self::where('email_verified_at', null)->count()) * 100) / self::count());
         $data['verified'] = (100 - $data['unverified']);
-        $data['kyc_submit'] = $kyc->count();
-        $data['kyc_approved'] = $kyc->where('status', 'approved')->count();
-        $data['kyc_pending'] = $kyc->count() > 0 ? ceil((($kyc->where('status', 'pending')->count()) * 100) / $kyc->count()) : 0;
-        $data['kyc_missing'] = $kyc->count() > 0 ? ceil((($kyc->where('status', 'missing')->count()) * 100) / $kyc->count()) : 0;
+        $data['kyc_submit'] = KYC::count();
+        $data['kyc_approved'] = KYC::where('status', 'approved')->count();
+        $data['kyc_pending'] = KYC::count() > 0 ? ceil(((KYC::where('status', 'pending')->count()) * 100) / KYC::count()) : 0;
+        $data['kyc_missing'] = KYC::count() > 0 ? ceil(((KYC::where('status', 'missing')->count()) * 100) / KYC::count()) : 0;
 
         $data['chart'] = self::chart($get);
 
