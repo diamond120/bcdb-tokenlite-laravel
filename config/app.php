@@ -181,8 +181,6 @@ return [
         App\Providers\EMailServiceProvider::class,
         // Override the Translation System
         App\Providers\NioTranslationServiceProvider::class,
-        // Other Service Providers
-        App\BigChainDB\BigChainServiceProvider::class,
     ],
 
     /*
