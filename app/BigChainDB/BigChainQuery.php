@@ -6,18 +6,22 @@
 namespace App\BigChainDB;
 
 use DateTime;
+use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 
 class BigChainQuery
 {
+    protected static $driver = null;
     protected $table;
     protected $object;
     protected $queries = null;
     protected $orders = [];
     protected $limit = null;
-    protected static $driver = null;
+    protected $page = null;
+
+    protected static $count = 0;
     
     public function __construct(string $table = null, string $object = null)
     {
@@ -34,32 +38,46 @@ class BigChainQuery
     private function getParams() {
         return [
             'object' => $this->table,
-            'where' => $this->queries,
+            'where' => $this->queries ? json_encode($this->queries) : null,
             'orderBy' => $this->orders,
+            'page' => $this->page,
             'limit' => $this->limit
         ];
     }
 
+    public function paginate() {
+        return new BigChainPaginator($this);
+    }
+
     public function get()
     {    
-        Log::info('GET ' . $this->table . ' ' . json_encode($this->queries));    
-        if($this->table == 'ico_stages' || $this->table == 'transactions') {
-            $this->queries = [];
+        Log::info('GET ' . $this->table . ' COUNT: ' . self::$count . ' ' . json_encode($this->getParams()));
+
+        if($this->table === 'settings') {
+            self::$count += 1;
+            if(self::$count == 1000) {
+                throw new \Exception('Settings Loop Error');
+            }
         }
 
-        if(!$this->table) {
-            throw new \Exception('sfdsfas');
-        }
-        $res = self::$driver->get('/', [ 'query' => $this->getParams() ]);
+        $response = self::$driver->get('/', [ 'query' => $this->getParams() ]);
+
+        $result = json_decode($response->getBody()->getContents());
         
-        $items = json_decode($res->getBody()->getContents())->data;
-        
-        if(!is_array($items)) {
-            throw new \Exception(json_encode($items));
+        if(!is_array($result->data)) {
+            throw new \Exception(json_encode($result));
         }
 
-        Log::info('PARSE ' . json_encode($items));
-        return new Collection(array_map(function($item) { return new $this->object($item); }, $items));
+        $items = new Collection(array_map(function($item) { return new $this->object($item); }, $result->data));
+
+        $res =  isset($result->total) ? [
+            'items' => $items,
+            'total' => $result->total
+        ] : $items;
+
+        Log::info('RETURN ' . json_encode($res));
+
+        return $res;
     }
     
     public function all()
@@ -101,7 +119,6 @@ class BigChainQuery
         $sss = $this->where($data)->first();
         Log::info("CREATE " . json_encode($sss));
         return $sss;
-        //Log::info("Create" . json_encode(json_decode($res->getBody()->getContents())));
     }
 
     public function insert($data)
@@ -122,10 +139,25 @@ class BigChainQuery
         $res = self::$driver->delete('/', [ 'query' => $this->getParams() ]);
         Log::info("Delete" . json_encode(json_decode($res->getBody()->getContents())));
     }
-   
+
+    /**
+     * Add OFFSET & LIMIT clause to the query.
+     * @param  int   $page
+     * @param  int   $pageSize
+     * @return Collection
+     */
+    public function pagination($page, $pageSize)
+    {
+        $this->page = $page;
+        $this->limit = $pageSize;
+        $res =  $this->get();
+        Log::info("PAGE " . json_encode($res));
+        return $res;
+    }
+
     /**
      * Add LIMIT clause to the query.
-     * @param  int   $column
+     * @param  int   $count
      * @return $this
      */
     public function limit($count)
@@ -143,7 +175,10 @@ class BigChainQuery
      */
     public function orderBy($column, $order)
     {
-        $this->orders[] = [ $column => $order ];
+        $this->orders[] = [
+            'key' => $column,
+            'order' => $order
+        ];
         return $this;
     }
 
@@ -216,6 +251,10 @@ class BigChainQuery
 
     public function whereNotIn($column, $value) {
         return $this->where($column, '!in', $value);
+    }
+
+    public function whereNotNull($column) {
+        return $this->where($column, '!=', null);
     }
 
     public function whereBetween($column, $value) {
