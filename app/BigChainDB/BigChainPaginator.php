@@ -9,54 +9,61 @@ use Illuminate\Support\Facades\Log;
 
 class BigChainPaginator {
     protected $query;
-    protected $items = [];
     protected $total;
+    protected $pageCount;
     protected $page;
     protected $pageSize;
     protected $baseUrl;
+    protected $items = [];
+    protected $position = 0;
 
-    public function __construct(BigChainQuery $query) {
+    public function __construct(BigChainQuery $query, $pageSize = null) {
         $this->query = $query;
+        $this->pageSize = $pageSize ?? 10;
     }
 
     public function appends($request) {
         $this->page = $request->page ?? 1;
-        $this->pageSize = $request->pageSize ?? 10;
         $this->baseUrl = $request->url();
-        
         $data = $this->query->pagination($this->page, $this->pageSize);
+        
+        Log::info(json_encode($data['items']));
+        
         $this->items = $data['items'];
         $this->total = $data['total'];
+        $this->pageCount = ceil($this->total / $this->pageSize);
+        Log::info('Page Count ' . $this->pageCount);
         return $this;
     }
 
     public function url($page) {
-
+        if($page < 1 || $page > $this->pageCount) return null;
+        return $this->baseUrl . '?page=' . $page;
     }
 
     public function previousPageUrl() {
-
+        return $this->url($this->page - 1);
     }
 
     public function nextPageUrl() {
-
+        return $this->url($this->page + 1);
     }
 
     public function currentPage() {
-
+        return $this->page;
     }
 
     public function lastPage() 
     {
-        return 0;
+        return $this->pageCount;
     }
 
     public function total() {
-        return 10;
+        return $this->pageCount;
     }
 
     public function hasPages() {
-        return true;
+        return $this->pageCount > 1;
     }
 
     public function getItems() {

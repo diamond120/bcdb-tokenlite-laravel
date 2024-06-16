@@ -20,8 +20,6 @@ class BigChainQuery
     protected $orders = [];
     protected $limit = null;
     protected $page = null;
-
-    protected static $count = 0;
     
     public function __construct(string $table = null, string $object = null)
     {
@@ -45,27 +43,20 @@ class BigChainQuery
         ];
     }
 
-    public function paginate() {
-        return new BigChainPaginator($this);
+    public function paginate($pageSize) {
+        return new BigChainPaginator($this, $pageSize);
     }
 
     public function get()
     {    
-        Log::info('GET ' . $this->table . ' COUNT: ' . self::$count . ' ' . json_encode($this->getParams()));
-
-        if($this->table === 'settings') {
-            self::$count += 1;
-            if(self::$count == 1000) {
-                throw new \Exception('Settings Loop Error');
-            }
-        }
+        Log::info('GET ' . $this->table . json_encode($this->getParams()));
 
         $response = self::$driver->get('/', [ 'query' => $this->getParams() ]);
 
         $result = json_decode($response->getBody()->getContents());
         
         if(!is_array($result->data)) {
-            throw new \Exception(json_encode($result));
+            throw new Exception(json_encode($result));
         }
 
         $items = new Collection(array_map(function($item) { return new $this->object($item); }, $result->data));
@@ -74,8 +65,8 @@ class BigChainQuery
             'items' => $items,
             'total' => $result->total
         ] : $items;
-
-        Log::info('RETURN ' . json_encode($res));
+        
+        Log::info('RETURN TOTAL ' . ($result->total ?? 'none') . ' COUNT ' . count($items));
 
         return $res;
     }
@@ -88,6 +79,13 @@ class BigChainQuery
     public function first()
     {
         return $this->limit(1)->get()->first();
+    }
+
+    public function FindOrFail($id)
+    {
+        $res = $this->where('id', $id)->first();
+        if($res) return $res;
+        throw new Exception('Invalid ID');
     }
 
     public function value(string $column) 
@@ -184,8 +182,7 @@ class BigChainQuery
 
     public function latest()
     {
-        $this->orders[] = [ 'created_at' => 'DESC' ];
-        return $this;
+        return $this->orderBy('created_at', 'DESC');
     }
 
     /**
