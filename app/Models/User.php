@@ -257,7 +257,7 @@ class User extends BigChainModel implements
      */
     public function referrals()
     {
-        return $this->where('referral', $this->id)->get();
+        return User::where('referral', $this->id)->get();
     }
 
     public function generateSecret()

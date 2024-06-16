@@ -183,7 +183,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($kycs as $kyc)
+                        @foreach($kycs->getItems() as $kyc)
                         <tr class="data-item data-item-{{ $kyc->id }}">
                             <td class="data-col dt-user">
                                 <span class="d-none">{{ $kyc->status }}</span>

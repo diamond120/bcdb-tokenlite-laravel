@@ -286,7 +286,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($trnxs as $trnx)
+                        @foreach($trnxs->getItems() as $trnx)
                         @php 
                             $text_danger = ( $trnx->tnx_type=='refund' || ($trnx->tnx_type=='transfer' && $trnx->extra=='sent') ) ? ' text-danger' : '';
                         @endphp

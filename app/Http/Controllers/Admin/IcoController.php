@@ -172,7 +172,7 @@ class IcoController extends Controller
                 $stage->status = ($request->input('type') == 'resume_stage')?'active':'paused';
                 $stage->save();
 
-                $status = ($stage->status == 'active')?'Resume' : ($stage->status == 'paused')?'Paused' : "";
+                $status = ($stage->status == 'active')? 'Resume' : (($stage->status == 'paused') ? 'Paused' : "");
                 $ret['msg'] = 'success';
                 $ret['message'] = __('messages.stage_update', ['status' => $status]);
             }

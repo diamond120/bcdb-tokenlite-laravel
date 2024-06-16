@@ -56,7 +56,7 @@ class UsersController extends Controller
                         ->orderBy($order_by, $ordered)->paginate($per_page);
         }
 
-        $pagi = $users->appends(request()->all());
+        $pagi = $users->appends($request);
         return view('admin.users', compact('users', 'role_data', 'is_page', 'pagi'));
     }
 
@@ -242,7 +242,7 @@ class UsersController extends Controller
             }
             // v1.1
             if ($type == 'referrals') {
-                $refered = User::where('referral', $user->id)->get(['id', 'name', 'created_at']);
+                $refered = User::where('referral', $user->id)->get();//(['id', 'name', 'created_at']);
                 foreach ($refered as $refer) {
                     $ref_count = User::where('referral', $refer->id)->count();
                     if($ref_count > 0){

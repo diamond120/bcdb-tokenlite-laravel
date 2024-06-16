@@ -69,7 +69,7 @@ class TransactionController extends Controller
         $stages = IcoStage::whereNotIn('status', ['deleted'])->get();
         $pm_currency = PaymentMethod::Currency;
         $users = User::where('status', 'active')->whereNotNull('email_verified_at')->where('role', '!=', 'admin')->get();
-        $pagi = $trnxs->appends(request()->all());
+        $pagi = $trnxs->appends($request);
         return view('admin.transactions', compact('trnxs', 'users', 'stages', 'pmethods', 'pm_currency', 'gateway', 'is_page', 'pagi'));
     }
 

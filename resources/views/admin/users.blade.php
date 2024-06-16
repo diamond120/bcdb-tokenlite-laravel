@@ -269,7 +269,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($users as $user)
+                        @foreach($users->getItems() as $user)
                         <tr class="data-item">
                             <td class="data-col data-col-wd-md dt-user">
                                 <div class="d-flex align-items-center">

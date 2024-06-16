@@ -38,7 +38,7 @@ class KycController extends Controller
         }
 
         $is_page = (empty($status) ? 'all' : $status);
-        $pagi = $kycs->appends(request()->all());
+        $pagi = $kycs->appends($request);
         return view('admin.kycs', compact('kycs', 'is_page', 'pagi'));
     }
 
