@@ -49,7 +49,7 @@ class BigChainQuery
 
     public function get()
     {    
-        Log::info('GET ' . $this->table . json_encode($this->getParams()));
+        Log::info('GET ' . $this->table . ' QUERY ' . json_encode($this->getParams()));
 
         $response = self::$driver->get('/', [ 'query' => $this->getParams() ]);
 
@@ -114,9 +114,15 @@ class BigChainQuery
             'data' => $data,
             'object' => $this->table
         ]]);
-        $sss = $this->where($data)->first();
-        Log::info("CREATE " . json_encode($sss));
-        return $sss;
+        $obj = new $this->object(json_decode($res->getBody()->getContents())->data);
+        Log::info('CREATE ' . $this->table . ' DATA ' . json_encode($obj));
+        return $obj;
+    }
+
+    public function firstOrCreate($where, $data) {
+        $res = $this->where($where)->first();
+        if($res) $res = $this->create($where + $data);
+        return $res;
     }
 
     public function insert($data)
@@ -129,13 +135,17 @@ class BigChainQuery
         $params = $this->getParams();
         $params['data'] = $data;
         $res = self::$driver->put('/', [ 'json' => $params ]);
-        Log::info("Update" . json_encode(json_decode($res->getBody()->getContents())));
+        $data = json_decode($res->getBody()->getContents())->data;
+        Log::info('Update ' . $this->table . ' DATA ' . json_encode($data));
+        return count($data);
     }
 
     public function delete()
     {
         $res = self::$driver->delete('/', [ 'query' => $this->getParams() ]);
-        Log::info("Delete" . json_encode(json_decode($res->getBody()->getContents())));
+        $data = json_decode($res->getBody()->getContents())->data;
+        Log::info('Delete ' . $this->table . ' ID ' . json_encode($data));
+        return count($data);
     }
 
     /**
@@ -149,7 +159,6 @@ class BigChainQuery
         $this->page = $page;
         $this->limit = $pageSize;
         $res =  $this->get();
-        Log::info("PAGE " . json_encode($res));
         return $res;
     }
 
@@ -186,6 +195,25 @@ class BigChainQuery
     }
 
     /**
+     * Apply the callback's query changes if the given "value" is true.
+     *
+     * @param  mixed  $value
+     * @param  callable  $callback
+     * @param  callable  $default
+     * @return mixed|$this
+     */
+    public function when($value, $callback, $default = null)
+    {
+        if ($value) {
+            return $callback($this, $value) ?: $this;
+        } elseif ($default) {
+            return $default($this, $value) ?: $this;
+        }
+
+        return $this;
+    }
+    
+    /**
      * Add WHERE clause to the query.
      *
      * @param  string  $connector
@@ -212,7 +240,9 @@ class BigChainQuery
                 ]
             ];
         } else if($column instanceof \Closure) {
-            throw new \Exception('invalid second parameter as a function');
+            $newQuery = new BigChainQuery($this->table, $this->object);
+            $column($newQuery);
+            $query = $newQuery->queries;
         } else {
             $query = [
                 'operator' => '==',
@@ -255,14 +285,16 @@ class BigChainQuery
     }
 
     public function whereBetween($column, $value) {
-        return $this->where($column, 'between', $value);
+        if($column == 'created_at')
+            $value = [$value[0]->getTimestamp(), $value[1]->getTimestamp()];
+        return $this->where($column, 'between', );
     }
 
     public function whereDate($column, $value) {
 
         return $this->whereBetween($column, [
-            (new DateTime($value . ' 00:00:00'))->getTimestamp(),
-            (new DateTime($value . ' 23:59:59'))->getTimestamp(),
+            new DateTime($value . ' 00:00:00'),
+            new DateTime($value . ' 23:59:59')
         ]);
     }
 

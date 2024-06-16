@@ -25,14 +25,10 @@ class BigChainPaginator {
     public function appends($request) {
         $this->page = $request->page ?? 1;
         $this->baseUrl = $request->url();
-        $data = $this->query->pagination($this->page, $this->pageSize);
-        
-        Log::info(json_encode($data['items']));
-        
+        $data = $this->query->pagination($this->page, $this->pageSize);       
         $this->items = $data['items'];
         $this->total = $data['total'];
         $this->pageCount = ceil($this->total / $this->pageSize);
-        Log::info('Page Count ' . $this->pageCount);
         return $this;
     }
 

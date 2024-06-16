@@ -2179,7 +2179,7 @@ if (!function_exists('explode_user_for_demo')) {
 if (!function_exists('get_lang')) {
     function get_lang($get=null) {
         if( application_installed(true) && Schema::hasTable('languages') ){
-            $actived_lang = Language::where('status', 1)->get(['name', 'label', 'short', 'code']);
+            $actived_lang = Language::where('status', 1)->get();
             $languages = [];
             if($actived_lang) {
                 foreach ($actived_lang as $lang) {

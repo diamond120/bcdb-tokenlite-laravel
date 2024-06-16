@@ -79,8 +79,16 @@ class PaymentMethod extends BigChainModel
             'xmr' => 'Monero',
         ];
 
-    public function __construct()
+    /**
+     * Create a new Eloquent model instance.
+     *
+     * @param  array|\stdClass $attributes
+     * @return void
+     */
+    public function __construct($attributes = null)
     {
+        parent::__construct($attributes);
+
         $auto_check = (60 * (int) get_setting('pm_automatic_rate_time', 60)); // 1 Hour
 
         $this->save_default();
