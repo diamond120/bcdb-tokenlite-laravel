@@ -102,7 +102,7 @@ class Transaction extends BigChainModel
      */
     public static function get_by_own($where=null, $where_not=null) {
         // $return = (empty($where)) ? self::has('user_tnx') : self::has('user_tnx')->where($where);
-        $by_user = self::has('user_tnx');
+        $by_user = self::has('users', 'transactions.user', '=', 'users.id');
         if(!empty($where)) {
             $by_user->where($where);
         }
@@ -539,7 +539,7 @@ class Transaction extends BigChainModel
             return $balance_sum; 
 
         } elseif($type='stages') {
-            $get_stages = IcoStage::with([ 'tnx_by_user'=> function($q) { $q->where(['refund' => null, 'status' => 'approved'])->whereNotIn('tnx_type', ['refund'])->has('user_tnx'); } ])->get();
+            $get_stages = IcoStage::whereNotIn('tnx_type', ['refund'])->has('users', 'ico_stages.user', '=', 'users.id')->get();
             $stages_sum = [];
             if($get_stages->count() > 0) {
                 foreach ($get_stages as $stage) {
