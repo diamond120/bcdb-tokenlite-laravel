@@ -15,6 +15,7 @@ class BigChainQuery
 {
     protected static $driver = null;
     protected $table;
+    protected $join = null;
     protected $object;
     protected $queries = null;
     protected $orders = [];
@@ -28,7 +29,8 @@ class BigChainQuery
         if(!self::$driver) {
             self::$driver = new Client([
                 'base_uri' => config('bigchaindb.driver'),
-                'headers' => config('bigchaindb.headers')
+                'headers' => config('bigchaindb.headers'),
+                'verify' => false
             ]);
         }
     }
@@ -36,6 +38,7 @@ class BigChainQuery
     private function getParams() {
         return [
             'object' => $this->table,
+            'join' => $this->join,
             'where' => $this->queries ? json_encode($this->queries) : null,
             'orderBy' => $this->orders,
             'page' => $this->page,
@@ -148,6 +151,25 @@ class BigChainQuery
         return count($data);
     }
 
+    public function has($join_table, $own_field, $operator, $join_field)
+    {
+        return $this->join($join_table, $own_field, $operator, $join_field);
+    }
+
+    /**
+     * Add JOIN clause to the query.
+     * @param   string  $join_table
+     * @param   string  $own_field
+     * @param   string  $operator
+     * @param   string  $join_field
+     * @return  $this
+     */
+    public function join($join_table, $own_field, $operator, $join_field)
+    {
+        $this->join = [ $join_table, $own_field, $join_field ];
+        return $this;
+    }
+
     /**
      * Add OFFSET & LIMIT clause to the query.
      * @param  int   $page
@@ -158,7 +180,7 @@ class BigChainQuery
     {
         $this->page = $page;
         $this->limit = $pageSize;
-        $res =  $this->get();
+        $res = $this->get();
         return $res;
     }
 
