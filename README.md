@@ -1,4 +1,4 @@
-# BigchainDB Integration in Laravel
+# ORM Development for BigChainDB Integration Test in Laravel
 This project demonstrates how to integrate BigchainDB into a Laravel application using a custom BigchainDB driver. This README will guide you through the setup and usage of the integration.
 
 ## Features
@@ -22,7 +22,7 @@ Step 2: Configure Environment Variables
 
 Copy the .env.example file to .env and configure your environment variables:
 
-    cp .env.example .env
+    cp .env.<mode>.example .env
 
 Update the .env file with your BigchainDB configuration:
 
