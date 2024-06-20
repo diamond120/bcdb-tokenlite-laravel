@@ -28,8 +28,10 @@ class BigChainQuery
         $this->object = $object;
         if(!self::$driver) {
             self::$driver = new Client([
-                'base_uri' => config('bigchaindb.driver'),
-                'headers' => config('bigchaindb.headers'),
+                'base_uri' => env('BIGCHAINDB_DRIVER', 'http://localhost:2466/'),
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
                 'verify' => false
             ]);
         }
